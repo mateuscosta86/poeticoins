@@ -18,6 +18,11 @@ defmodule Poeticoins.Historical do
     GenServer.call(pid, {:get_last_trade, product})
   end
 
+  @spec get_last_trades(pid() | atom(), [Product.t()]) :: [Trade.t()]
+  def get_last_trades(pid \\ __MODULE__, products) do
+    GenServer.call(pid, {:get_last_trades, products})
+  end
+
   def start_link(opts) do
     {products, opts} = Keyword.pop(opts, :products, [])
     GenServer.start_link(__MODULE__, products, opts)
@@ -42,5 +47,10 @@ defmodule Poeticoins.Historical do
   def handle_call({:get_last_trade, product}, _from, historical) do
     trade = Map.get(historical.trades, product)
     {:reply, trade, historical}
+  end
+
+  def handle_call({:get_last_trades, products}, _from, historical) do
+    trades = products |> Enum.each(&Map.get(historical.trads, &1))
+    {:reply, trades, historical}
   end
 end
