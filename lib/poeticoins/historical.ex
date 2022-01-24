@@ -24,7 +24,7 @@ defmodule Poeticoins.Historical do
   end
 
   def start_link(opts) do
-    {products, opts} = Keyword.pop(opts, :products, [])
+    {products, opts} = Keyword.pop(opts, :products, Exchanges.available_products())
     GenServer.start_link(__MODULE__, products, opts)
   end
 
@@ -50,7 +50,7 @@ defmodule Poeticoins.Historical do
   end
 
   def handle_call({:get_last_trades, products}, _from, historical) do
-    trades = products |> Enum.each(&Map.get(historical.trads, &1))
+    trades = products |> Enum.map(&Map.get(historical.trades, &1))
     {:reply, trades, historical}
   end
 end
