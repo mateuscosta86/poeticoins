@@ -1,7 +1,8 @@
 defmodule Poeticoins do
-  defdelegate subscribe_to_trader(product), to: Poeticoins.Exchanges, as: :subscribe
+  defdelegate available_products, to: Poeticoins.Exchanges
+  defdelegate subscribe_to_trades(product), to: Poeticoins.Exchanges, as: :subscribe
 
-  defdelegate unsubscribe_to_trader(product), to: Poeticoins.Exchanges, as: :unsubscribe
+  defdelegate unsubscribe_to_trades(product), to: Poeticoins.Exchanges, as: :unsubscribe
 
   defdelegate get_last_trade(product), to: Poeticoins.Historical
 
