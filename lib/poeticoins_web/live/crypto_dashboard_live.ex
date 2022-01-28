@@ -1,24 +1,10 @@
 defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
 
+  alias Poeticoins.Products.Product
+
   def mount(_params, _session, socket) do
-    products = Poeticoins.available_products()
-
-    trades =
-      products
-      |> Poeticoins.get_last_trades()
-      |> Enum.reject(&is_nil/1)
-      |> Enum.map(&{&1.product, &1})
-      |> Enum.into(%{})
-
-    if socket.root_pid !== nil do
-      IO.inspect(socket)
-
-      products
-      |> Enum.each(&Poeticoins.subscribe_to_trades/1)
-    end
-
-    socket = assign(socket, trades: trades, products: products)
+    socket = assign(socket, trades: %{}, products: [])
     {:ok, socket}
   end
 
@@ -29,5 +15,42 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
       end)
 
     {:noreply, socket}
+  end
+
+  def handle_event("add-product", %{"product_id" => product_id}, socket) do
+    [exchange_name, currency_pair] = String.split(product_id, ":")
+    product = Product.new(exchange_name, currency_pair)
+    socket = maybe_add_product(socket, product)
+    {:noreply, socket}
+  end
+
+  defp maybe_add_product(socket, product) do
+    if product not in socket.assigns.products do
+      socket
+      |> add_product(product)
+      |> put_flash(
+        :info,
+        "#{product.exchange_name} - #{product.currency_pair} added successfully."
+      )
+    else
+      IO.inspect(product)
+
+      socket
+      |> put_flash(
+        :error,
+        "#{product.exchange_name} - #{product.currency_pair} already added."
+      )
+    end
+  end
+
+  defp add_product(socket, product) do
+    Poeticoins.subscribe_to_trades(product)
+
+    socket
+    |> update(:products, &(&1 ++ [product]))
+    |> update(:trades, fn trades ->
+      trade = Poeticoins.get_last_trade(product)
+      Map.put(trades, product, trade)
+    end)
   end
 end
