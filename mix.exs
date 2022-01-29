@@ -48,7 +48,8 @@ defmodule Poeticoins.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:gun, "~> 1.3"},
       {:cowlib, "~> 2.11.0", override: true},
-      {:certifi, "~> 2.8"}
+      {:certifi, "~> 2.8"},
+      {:dart_sass, "~> 0.3", runtime: Mix.env() == :dev}
     ]
   end
 

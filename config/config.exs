@@ -36,6 +36,16 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
+config :dart_sass,
+  version: "1.44.0",
+  default: [
+    args: [
+      "css/poeticoins.scss",
+      "../priv/static/assets/from_scss.css"
+    ],
+    cd: Path.expand("../assets", __DIR__)
+  ]
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

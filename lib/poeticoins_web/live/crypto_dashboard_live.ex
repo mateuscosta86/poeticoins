@@ -2,9 +2,10 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
   use PoeticoinsWeb, :live_view
 
   alias Poeticoins.Products.Product
+  import PoeticoinsWeb.ProductHelpers
 
   def mount(_params, _session, socket) do
-    socket = assign(socket, trades: %{}, products: [])
+    socket = assign(socket, trades: %{}, products: [], filter_products: & &1)
     {:ok, socket}
   end
 
@@ -21,6 +22,20 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
     [exchange_name, currency_pair] = String.split(product_id, ":")
     product = Product.new(exchange_name, currency_pair)
     socket = maybe_add_product(socket, product)
+    {:noreply, socket}
+  end
+
+  def handle_event("add-product", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("filter-products", %{"search" => search}, socket) do
+    socket =
+      assign(socket, :filter_products, fn product ->
+        String.downcase(product.exchange_name) =~ String.downcase(search) or
+          String.downcase(product.currency_pair) =~ String.downcase(search)
+      end)
+
     {:noreply, socket}
   end
 
@@ -52,5 +67,10 @@ defmodule PoeticoinsWeb.CryptoDashboardLive do
       trade = Poeticoins.get_last_trade(product)
       Map.put(trades, product, trade)
     end)
+  end
+
+  defp grouped_products_by_exchange_name do
+    Poeticoins.available_products()
+    |> Enum.group_by(& &1.exchange_name)
   end
 end
